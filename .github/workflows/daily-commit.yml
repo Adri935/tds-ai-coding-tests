@@ -1,0 +1,55 @@
+# This is the name of the workflow as it will appear in the "Actions" tab
+name: Daily Commit
+
+on:
+  # 1. This is the schedule trigger.
+  # "30 5 * * *" means "run at 05:30 UTC every day".
+  # This fulfills the "once per day" and "specific hours/minutes" requirement.
+  schedule:
+    - cron: '30 5 * * *'
+  
+  # 2. This adds a manual trigger (a "Run workflow" button).
+  # You will use this to complete the "Trigger the workflow" part of your assignment.
+  workflow_dispatch:
+
+# 3. This gives the workflow permission to write to your repository,
+# which is necessary to create a commit.
+permissions:
+  contents: write
+
+jobs:
+  # A single job in this workflow
+  auto-commit-job:
+    # Runs on a standard GitHub-hosted Ubuntu runner
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Check out your repository's code
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # Step 2: Configure the Git user for the commit
+      - name: Set up Git user
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "github-actions-bot@users.noreply.github.com"
+
+      # Step 3: Create a change, commit it, and push it
+      # This step name includes your email address, fulfilling that requirement.
+      - name: Create commit - 23f2004791@ds.study.iitm.ac.in
+        run: |
+          # We need to create a change. The easiest way is to
+          # update a file with the current date and time.
+          echo "Last automated run: $(date)" > last-run.txt
+          
+          # Now, add this file, commit it, and push it to the repository
+          git add last-run.txt
+          
+          # Check if there are changes to commit. If not, exit gracefully.
+          # This prevents errors if the action runs but nothing changed.
+          if git diff-index --quiet HEAD; then
+            echo "No changes to commit."
+          else
+            git commit -m "Automated daily commit"
+            git push
+          fi
